@@ -1,4 +1,4 @@
-# Formules financières — v4.5
+# Formules financières — v4.6
 
 Toutes les valeurs sont calculées en centimes entiers puis reconverties en euros. Les lignes supprimées et doublons sont ignorés.
 
@@ -14,5 +14,5 @@ Toutes les valeurs sont calculées en centimes entiers puis reconverties en euro
 - **Solde de contrôle** : `K = B + comptes_bloqués_récupérables − total_associés − dettes_restantes − refus_non_remboursés − candidats_en_attente`. L’interface affiche excédent si positif, déficit si négatif, équilibré si zéro.
 - **Excédent attribué à l’associé 1** : `E = max(0, K)`. Si `K > 0`, l’interface ajoute `E` uniquement au solde affiché après investissement de l’associé 1, sur une ligne séparée « dont excédent attribué ». Si `K ≤ 0`, `E = 0` et rien n’est ajouté.
 - **Capital global** : l’excédent `E` n’est pas ajouté à `C` : le capital global reste `B + encours + perso − dettes`, sans double comptage.
-- **Test de solvabilité** : `S = C − nouveau_solde_moi − nouveau_solde_Axel − total_argent_candidats_en_cours`; l’excédent d’affichage n’entre pas dans cette formule.
+- **Test de solvabilité** : `S = C − solde_associé_1_calculé − solde_associé_2_calculé − total_argent_candidats_en_cours`. Chaque solde associé est calculé en lecture seule : `investissement_départ + dividendes + (E pour l’associé 1)`, avec `E = max(0, K)`. Les anciens champs éventuellement stockés `nouveauSoldeMoi`/`nouveauSoldeAxel` sont ignorés, sans migration SQL.
 - **Dividendes** : jamais négatifs; un gain invalide ou négatif distribue zéro.
