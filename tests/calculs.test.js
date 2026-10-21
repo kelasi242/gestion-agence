@@ -1,14 +1,10 @@
-import assert from 'node:assert/strict';import{calcCompte,controleCompte,totaux}from'../src/lib/calculs.js';
-const refus=calcCompte({statut:'refus',montant_client:3000,montant_rembourse:0},{pct_refus:100/3});assert.equal(refus.garde_refus,1000);assert.equal(refus.a_rembourser,2000);assert.equal(refus.reste_rembourser,2000);
-assert.equal(calcCompte({statut:'visa',montant_client:3000,commission:200}).gain,2800);
-assert.equal(controleCompte({comptesBloques:10000,totalAssocies:3000,dettes:1000,refusNonRembourses:500,candidatsAttente:500}).resultat,5000);
-assert.equal(controleCompte({comptesBloques:1000,totalAssocies:1500,dettes:100,refusNonRembourses:200,candidatsAttente:300}).resultat,-1100);
+import assert from 'node:assert/strict';import{calcCompte,controleCompte,totaux,dividendes,activeRows,sortRows}from'../src/lib/calculs.js';
+assert.equal(calcCompte({statut:'refus',montant_client:3000},{pct_refus:100/3}).garde_refus,1000);assert.equal(calcCompte({statut:'refus',montant_client:3000,montant_rembourse:500},{pct_refus:100/3}).reste_rembourser,1500);assert.equal(calcCompte({statut:'visa',montant_client:3000,commission:200}).gain,2800);assert.equal(calcCompte({statut:'visa',montant_client:0,commission:200}).com_deduite,0);assert.equal(calcCompte({statut:'visa',montant_client:100,commission:200}).gain,0);assert.equal(calcCompte({statut:'visa',montant_client:3000,montant_bloque:12131},{fraisBancairesCompteBloqueVisa:127}).reste_bloque,12004);assert.equal(calcCompte({statut:'refus',montant_bloque:12131},{fraisBancairesCompteBloqueVisa:127}).reste_bloque,12131);assert.equal(calcCompte({statut:'visa',montant_bloque:100}).reste_bloque,0);
+assert.equal(calcCompte({statut:'visa',montant_client:-10,commission:NaN}).gain,0);assert.equal(calcCompte({statut:'en_cours',montant_bloque:1000,retire:1200}).reste_bloque,0);
+assert.equal(totaux({comptes:[{id:'a',statut:'en_cours',montant_bloque:.1},{id:'b',statut:'en_cours',montant_bloque:.2}],dettes:[],perso:[],parametres:{}}).bloque,.3);
+assert.equal(totaux({comptes:[{id:'a',statut:'en_cours',montant_bloque:1000,retire:100},{id:'a',statut:'en_cours',montant_bloque:999},{id:'x',statut:'en_cours',montant_bloque:500,deleted_at:'x'}],dettes:[],perso:[],parametres:{}}).bloque,900);
+assert.equal(totaux({comptes:[],dettes:[{montant:200,rembourse:250}],perso:[{montant:400,rembourse:100}],parametres:{n26:10,sparkasse:20,commerzbank:30,wise:40}}).dettes,0);assert.equal(totaux({comptes:[],dettes:[],perso:[],parametres:{n26:.1,sparkasse:.2}}).banques,.3);
 assert.equal(controleCompte({comptesBloques:1000,totalAssocies:500,dettes:200,refusNonRembourses:200,candidatsAttente:100}).resultat,0);
-assert.equal(totaux({comptes:[],dettes:[],perso:[],parametres:{}}).capital,0);console.log('calculs.test.js: OK — refus 3000€ => 2000€ remboursés / 1000€ gardés; contrôle excédent/déficit/équilibre');
-const v4=totaux({comptes:[{statut:'en_cours',montant_bloque:1000,retire:100}],dettes:[{montant:200,rembourse:50}],perso:[{montant:400,rembourse:100}],parametres:{n26:10,sparkasse:20,commerzbank:30,wise:40}});
-assert.equal(v4.banques,100);
-assert.equal(v4.disponible,1000);
-assert.equal(v4.capital,2450);
-assert.equal(v4.controle.termes.comptesBloques,900);
-console.log('calculs.test.js: OK — soldes bancaires, disponible et capital global v4');
-
+const ds=dividendes({gain:.1,associes:[{id:'1',part:1,investissement:0},{id:'2',part:1,investissement:0},{id:'3',part:1,investissement:0}]});assert.equal(ds.reduce((s,x)=>s+x.gain,0),.1);assert.deepEqual(ds.map(x=>x.gain),[.04,.03,.03]);
+assert.deepEqual(dividendes({gain:-10,associes:[{id:'1',part:50},{id:'2',part:50}]}).map(x=>x.gain),[0,0]);assert.deepEqual(dividendes({gain:NaN,associes:[{id:'1',part:50}]}).map(x=>x.part),[0]);assert.equal(totaux({comptes:[{id:'v',statut:'visa',montant_bloque:12131}],dettes:[],perso:[],parametres:{fraisBancairesCompteBloqueVisa:127}}).disponible,0);assert.equal(totaux({comptes:[{id:'v',statut:'visa',montant_bloque:12131}],dettes:[],perso:[],parametres:{fraisBancairesCompteBloqueVisa:127}}).capital,12004);assert.equal(sortRows([{id:'1',date_depot:'2024-01-01'},{id:'2',date_depot:'2025-01-01'}])[0].id,'2');assert.equal(totaux({comptes:[],dettes:[],perso:[],candidats:[{id:'c',statut:'attente',montant_prevu:12}],parametres:{}}).controle.termes.candidatsAttente,12);
+console.log('calculs.test.js: 18 groupes OK');

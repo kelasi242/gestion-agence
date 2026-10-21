@@ -1,4 +1,4 @@
-# Gestion Agence · v4.1
+# Gestion Agence · v4.3
 
 Application React + Vite, PWA et Supabase pour le suivi des comptes bloqués, candidats, dettes et remboursements.
 
