@@ -1,25 +1,23 @@
-# Gestion Agence · v4.3
+# Gestion Agence · v4.5
 
-Application React + Vite, PWA et Supabase pour le suivi des comptes bloqués, candidats, dettes et remboursements.
+Application React + Vite, PWA et Supabase pour le suivi des comptes bloqués, candidats, prêts personnels et dettes.
 
 ## Démarrage
-
 ```bash
 npm install
 npm run dev
+npm run test:calculs
+npm run build
 ```
 
-`npm run build` produit la version Netlify dans `dist/`. `npm run test:calculs` exécute les tests métier centralisés.
-
-## Configuration
-
-Les variables Supabase sont documentées dans `.env.example` et `.env.local`. L’URL et la clé publishable du projet Gestion Agence sont conservées dans le code de secours pour permettre le build Netlify sans variable injectée. Ne jamais remplacer cette clé par celle d’un autre projet.
-
-Le logo, le thème et les paramètres de l’agence sont stockés en local dans le navigateur. Les données métier restent synchronisées avec Supabase et la file d’attente hors-ligne est conservée localement.
-
 ## Calculs métier
+- Disponible = banques uniquement : N26 + Sparkasse + Commerzbank + Wise.
+- Capital global = banques + comptes bloqués récupérables après frais visa de 127 € + perso restant dû (argent prêté) − dettes restantes (argent que je dois).
+- Solde de contrôle = banques + comptes bloqués − associés − dettes − refus non remboursés − candidats en attente ; l’état excédent/déficit/équilibré est explicite.
+- Solde de contrôle excédentaire : si K > 0, l’excédent est attribué uniquement à l’affichage du solde après investissement de l’associé 1 (ligne séparée « dont excédent attribué »). Un déficit ou zéro n’ajoute rien.
+- Solvabilité = capital global − nouveau solde moi − nouveau solde Axel − candidats en cours ; l’excédent n’entre pas dans cette formule.
+- Libellés : **Perso — prêté (on me doit)** et **Dettes — je dois**.
+- Capital global et contrôle restent inchangés par l’attribution d’affichage ; aucun double comptage.
+- Commission démarcheur soustraite du montant client, zéro si aucun versement client. Dividendes jamais négatifs.
 
-- Refus : 1/3 du montant client est gardé, 2/3 est remboursé. Par exemple 3 000 € donnent 1 000 € gardés et 2 000 € à rembourser.
-- Visa : gain agence = montant client − commission.
-- Contrôle : `total comptes bloqués − somme du total des associés − total de ce que je dois − total des refus pas encore remboursés − total des candidats en attente`.
-- Dividendes : le gain agence est ventilé selon la part de chaque associé ; le nouveau solde ajoute le gain à l’investissement de départ.
+Voir `FORMULES.md` pour les définitions exactes.

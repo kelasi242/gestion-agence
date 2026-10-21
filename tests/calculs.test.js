@@ -4,7 +4,18 @@ assert.equal(calcCompte({statut:'visa',montant_client:-10,commission:NaN}).gain,
 assert.equal(totaux({comptes:[{id:'a',statut:'en_cours',montant_bloque:.1},{id:'b',statut:'en_cours',montant_bloque:.2}],dettes:[],perso:[],parametres:{}}).bloque,.3);
 assert.equal(totaux({comptes:[{id:'a',statut:'en_cours',montant_bloque:1000,retire:100},{id:'a',statut:'en_cours',montant_bloque:999},{id:'x',statut:'en_cours',montant_bloque:500,deleted_at:'x'}],dettes:[],perso:[],parametres:{}}).bloque,900);
 assert.equal(totaux({comptes:[],dettes:[{montant:200,rembourse:250}],perso:[{montant:400,rembourse:100}],parametres:{n26:10,sparkasse:20,commerzbank:30,wise:40}}).dettes,0);assert.equal(totaux({comptes:[],dettes:[],perso:[],parametres:{n26:.1,sparkasse:.2}}).banques,.3);
-assert.equal(controleCompte({comptesBloques:1000,totalAssocies:500,dettes:200,refusNonRembourses:200,candidatsAttente:100}).resultat,0);
+assert.equal(controleCompte({banques:1000,comptesBloques:1000,totalAssocies:500,dettes:200,refusNonRembourses:200,candidatsAttente:100}).resultat,1000);
+const exemple=totaux({comptes:[{id:'v',statut:'visa',montant_bloque:1127}],dettes:[{id:'d',montant:300,rembourse:100}],perso:[{id:'p',montant:500,rembourse:200}],candidats:[{id:'c',statut:'attente',montant_prevu:100}],parametres:{n26:1000,sparkasse:500,commerzbank:200,wise:100,associe1Investissement:400,associe2Investissement:100}}); assert.equal(exemple.capital,2900); assert.equal(exemple.controle.resultat,2000);
+assert.equal(totaux({comptes:[],dettes:[{montant:300,rembourse:100}],perso:[{montant:500,rembourse:200}],candidats:[{id:'c',statut:'prochain',montant_prevu:100}],parametres:{n26:1000,nouveauSoldeMoi:500,nouveauSoldeAxel:200}}).solvabilite,300);
 const ds=dividendes({gain:.1,associes:[{id:'1',part:1,investissement:0},{id:'2',part:1,investissement:0},{id:'3',part:1,investissement:0}]});assert.equal(ds.reduce((s,x)=>s+x.gain,0),.1);assert.deepEqual(ds.map(x=>x.gain),[.04,.03,.03]);
 assert.deepEqual(dividendes({gain:-10,associes:[{id:'1',part:50},{id:'2',part:50}]}).map(x=>x.gain),[0,0]);assert.deepEqual(dividendes({gain:NaN,associes:[{id:'1',part:50}]}).map(x=>x.part),[0]);assert.equal(totaux({comptes:[{id:'v',statut:'visa',montant_bloque:12131}],dettes:[],perso:[],parametres:{fraisBancairesCompteBloqueVisa:127}}).disponible,0);assert.equal(totaux({comptes:[{id:'v',statut:'visa',montant_bloque:12131}],dettes:[],perso:[],parametres:{fraisBancairesCompteBloqueVisa:127}}).capital,12004);assert.equal(sortRows([{id:'1',date_depot:'2024-01-01'},{id:'2',date_depot:'2025-01-01'}])[0].id,'2');assert.equal(totaux({comptes:[],dettes:[],perso:[],candidats:[{id:'c',statut:'attente',montant_prevu:12}],parametres:{}}).controle.termes.candidatsAttente,12);
-console.log('calculs.test.js: 18 groupes OK');
+
+// Excédent : attribué au seul associé 1, sans modifier les dividendes ; déficit/zéro n'ajoutent rien.
+const ex=dividendes({gain:100,excedentControle:25,associes:[{id:'1',part:50,investissement:10},{id:'2',part:50,investissement:20}]});
+assert.deepEqual(ex.map(x=>x.gain),[50,50]); assert.deepEqual(ex.map(x=>x.excedentAttribue),[25,0]); assert.deepEqual(ex.map(x=>x.nouveauSolde),[85,70]);
+assert.deepEqual(dividendes({gain:100,excedentControle:-25,associes:[{id:'1',part:100,investissement:10}]}).map(x=>x.excedentAttribue),[0]);
+assert.deepEqual(dividendes({gain:100,excedentControle:0,associes:[{id:'1',part:100,investissement:10}]}).map(x=>x.nouveauSolde),[110]);
+const exTotals=totaux({comptes:[],dettes:[],perso:[],parametres:{n26:100,associe1Investissement:10,associe2Investissement:20}});
+assert.equal(exTotals.excedentControle,70); assert.equal(exTotals.capital,100); assert.equal(exTotals.solvabilite,100);
+
+console.log('calculs.test.js: 21 groupes OK');

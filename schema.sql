@@ -12,5 +12,5 @@ alter table public.parametres add column if not exists sparkasse numeric not nul
 alter table public.parametres add column if not exists commerzbank numeric not null default 0;
 alter table public.parametres add column if not exists wise numeric not null default 0;
 
--- v4.3: frais Expatrio par compte bloqué avec visa (migration idempotente)
+-- v4.4: frais Expatrio par compte bloqué avec visa (migration idempotente)
 alter table public.parametres add column if not exists fraisBancairesCompteBloqueVisa numeric not null default 127;
