@@ -6,3 +6,8 @@ create table if not exists public.dettes(id uuid primary key default gen_random_
 create table if not exists public.perso(id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, nom text not null, date_op date, montant numeric not null default 0, rembourse numeric not null default 0, notes text default '', unique(user_id,nom,date_op,montant));
 alter table public.comptes enable row level security; alter table public.candidats enable row level security; alter table public.dettes enable row level security; alter table public.perso enable row level security;
 do $$ declare t text; begin foreach t in array array['comptes','candidats','dettes','perso'] loop execute format('drop policy if exists %I_owner on public.%I',t,t); execute format('create policy %I_owner on public.%I for all using (auth.uid()=user_id) with check (auth.uid()=user_id)',t,t); end loop; end $$;
+-- v4: soldes bancaires explicites (rétrocompatible avec les installations v3)
+alter table public.parametres add column if not exists n26 numeric not null default 0;
+alter table public.parametres add column if not exists sparkasse numeric not null default 0;
+alter table public.parametres add column if not exists commerzbank numeric not null default 0;
+alter table public.parametres add column if not exists wise numeric not null default 0;
